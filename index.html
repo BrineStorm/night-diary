@@ -3612,6 +3612,16 @@ html.closed, html.closed body { overflow: hidden; }
   .owner-plate, .op-glow, .op-frame, .op-l, .op-r, .ink-ch, .ink-ch.fresh, .owner-plate.sealed .ink-ch { animation: none !important; }
   .op-drop, .ember, .puff, .ink-run { display: none; }
 }
+/* ---------- phones and tablets: the spread does not fit side by side, so the left page lies above the right one ---------- */
+@media not all and (min-width: 1024px) and (min-height: 600px) {
+  .tm-left { position: relative; right: auto; top: auto; bottom: auto; left: auto; width: 100%; aspect-ratio: 10 / 13; height: auto;
+    margin-bottom: calc(var(--cv) + 10px); pointer-events: auto; border-radius: 8px 8px 2px 2px; }
+  .tm-left::after { display: none; }
+  .tm-left .pp:not(.jj):not(.endpaper) { padding: 34px 22px 26px 22px; }
+  .tm-cover { left: calc(-1 * var(--cv)); }
+  .tm-stack.l, .tm-tulle.l, .tm-bow { display: none; }
+  .tm-left .jj-extra:hover, .tm-left .jj-extra:focus-visible { transform: rotate(var(--er, 5deg)) translateY(-16px); }
+}
 </style>
 </head>
 <body>
@@ -5719,6 +5729,8 @@ function openFromHash() {
   const el = location.hash && document.getElementById(location.hash.slice(1));
   if (!el) return;
   if (typeof revealLeaf === "function") revealLeaf(el);
+  if (el.classList.contains("leaf") && window.matchMedia && !matchMedia("(min-width: 1024px) and (min-height: 600px)").matches)
+    setTimeout(() => window.scrollTo({ top: Math.max(0, flipEl.getBoundingClientRect().top + scrollY - 70) }), 0);
   if (el.tagName === "DETAILS") { el.open = true; setTimeout(() => el.scrollIntoView({ block: "center" }), 60); }
 }
 window.addEventListener("hashchange", openFromHash);
@@ -8973,7 +8985,9 @@ function afterShow() {
   if (typeof drawAll === "function") drawAll();
   if (typeof drawEyes === "function") drawEyes();
   const top = flipEl.getBoundingClientRect().top + window.scrollY - 70;
-  if (window.scrollY > top) window.scrollTo({ top: Math.max(0, top), behavior: reduceMotion ? "auto" : "smooth" });
+  /* on a phone the left page lies above the right one: always start the spread from its top */
+  const phone = window.matchMedia && !matchMedia("(min-width: 1024px) and (min-height: 600px)").matches;
+  if (window.scrollY > top || phone) window.scrollTo({ top: Math.max(0, top), behavior: reduceMotion ? "auto" : "smooth" });
 }
 /* ---------- left-hand pages: Doré's engravings for «The Raven» (1884, public domain) ---------- */
 const PLATES = ["01", "11", "12", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"];
@@ -10659,8 +10673,16 @@ function showPage(i, instant) {
   if (i < 0 || i >= leaves.length || i === curP || turning) return;
   const out = leaves[curP], inn = leaves[i], fwd = i > curP;
   const innIn = inn.querySelector(":scope > .leaf-in"); if (innIn) innIn.scrollTop = 0;   /* a page opens at its top */
-  if (instant || reduceMotion || !out.animate) {
-    out.hidden = true; inn.hidden = false; curP = i; setLeft(i - 1); afterShow(); return;
+  const phone = window.matchMedia && !matchMedia("(min-width: 1024px) and (min-height: 600px)").matches;
+  if (instant || reduceMotion || !out.animate || phone) {
+    out.hidden = true; inn.hidden = false; curP = i; setLeft(i - 1); afterShow();
+    if (phone && !instant) {
+      /* on a phone the pages lie one above the other: no 3D turn, the new spread slides in and opens at its top */
+      window.dispatchEvent(new CustomEvent("pageturn", { detail: fwd ? 1 : -1 }));
+      const dx = fwd ? 36 : -36;
+      if (!reduceMotion && inn.animate) [tmLeft, inn].forEach((el, k) => el && el.animate([{ opacity: 0, transform: `translateX(${dx}px)` }, { opacity: 1, transform: "none" }], { duration: 320, delay: k * 60, easing: "ease-out", fill: "backwards" }));
+    }
+    return;
   }
   turning = true;
   window.dispatchEvent(new CustomEvent("pageturn", { detail: fwd ? 1 : -1 }));
