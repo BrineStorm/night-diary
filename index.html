@@ -3612,16 +3612,23 @@ html.closed, html.closed body { overflow: hidden; }
   .owner-plate, .op-glow, .op-frame, .op-l, .op-r, .ink-ch, .ink-ch.fresh, .owner-plate.sealed .ink-ch { animation: none !important; }
   .op-drop, .ember, .puff, .ink-run { display: none; }
 }
-/* ---------- phones and tablets: the spread does not fit side by side, so the left page lies above the right one ---------- */
+/* ---------- phones and tablets: the spread does not fit side by side, so the book shows one page at a time:
+   the left page (engraving, pocket, charms) and then the right one, turned over the spine like real pages ---------- */
 @media not all and (min-width: 1024px) and (min-height: 600px) {
   .tm-left { position: relative; right: auto; top: auto; bottom: auto; left: auto; width: 100%; aspect-ratio: 10 / 13; height: auto;
-    margin-bottom: calc(var(--cv) + 10px); pointer-events: auto; border-radius: 8px 8px 2px 2px; }
-  .tm-left::after { display: none; }
-  .tm-left .pp:not(.jj):not(.endpaper) { padding: 34px 22px 26px 22px; }
+    border-radius: 2px 8px 8px 2px; backface-visibility: hidden; }   /* taps go only to what is meant to be touched, as on a computer */
+  .tm-left::after { right: auto; left: 0; background: linear-gradient(90deg, rgba(0,0,0,.8), rgba(0,0,0,.42) 13%, rgba(0,0,0,.12) 45%, transparent); }
+  .tm-left .pp:not(.jj):not(.endpaper) { padding: 34px 22px 26px 30px; }
   .tm-cover { left: calc(-1 * var(--cv)); }
   .tm-stack.l, .tm-tulle.l, .tm-bow { display: none; }
   .tm-left .jj-extra:hover, .tm-left .jj-extra:focus-visible { transform: rotate(var(--er, 5deg)) translateY(-16px); }
+  .flipbook.ph-r .tm-left:not(.ph-turning) { display: none; }
+  .flipbook.ph-l > .leaf:not(.ph-turning) { display: none !important; }
+  .ph-turning { will-change: transform; }
+  .flipbook .tm-left .ph-corner { display: block; z-index: 6; pointer-events: auto; }
+  .tm-left .back-shade, .tm-left .leaf-shade, .tm-left::after { pointer-events: none; }
 }
+.tm-left .ph-corner { display: none; }
 </style>
 </head>
 <body>
@@ -8972,10 +8979,11 @@ const leaves = flipEl ? [...flipEl.querySelectorAll(":scope > .leaf")] : [];
 let curP = 0, turning = false;
 const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 function updateNav() {
-  document.getElementById("prevP").disabled = curP === 0;
-  document.getElementById("nextP").disabled = curP === leaves.length - 1;
+  const ph = isPhone(), L = ph && phSide === "L";
+  document.getElementById("prevP").disabled = curP === 0 && (!ph || L);
+  document.getElementById("nextP").disabled = curP === leaves.length - 1 && (!ph || !L);
   document.getElementById("toc").value = String(curP);
-  document.getElementById("pageNo").textContent = `${curP + 1} / ${leaves.length}`;
+  document.getElementById("pageNo").textContent = ph ? `${curP * 2 + (L ? 1 : 2)} / ${leaves.length * 2}` : `${curP + 1} / ${leaves.length}`;
 }
 function afterShow() {
   try { history.replaceState(null, "", "#" + leaves[curP].id); } catch (e) {}
@@ -10619,12 +10627,14 @@ const JJ_NOTES = [
 ];
 const JJ_Q = ["тише. это всего лишь ночь", "утро всегда приходит", "ты дожила до этой страницы", "дыши. медленно", "страх — не факт", "сегодня можно просто быть", "темнота — не враг", "ты не одна в этой комнате", "нужно дотянуть только до утра", "свеча горит, пока ты дышишь", "тень от куртки — это тень от куртки", "завтра будет новая страница"];
 document.addEventListener("click", e => { const t = e.target.closest && e.target.closest(".jj-tag"); if (t) t.classList.toggle("out"); });
+document.addEventListener("click", e => { if (e.target.closest && e.target.closest(".ph-corner")) showPage(curP + 1); });
 let tmLeft = null, tmLeftShade = null, tmLeftK = null;
 function setLeft(k) {
   if (!tmLeft || k === tmLeftK) return;
   tmLeftK = k;
   tmLeft.innerHTML = plateHTML(k);
   tmLeftShade = document.createElement("div"); tmLeftShade.className = "back-shade"; tmLeft.appendChild(tmLeftShade);
+  tmLeft.insertAdjacentHTML("beforeend", '<button class="corner no-print ph-corner" type="button" aria-label="Перевернуть страницу"></button>');
   paintOwner(tmLeft);
 }
 /* whose diary: the name lives in this browser, like the rest of the pages */
@@ -10669,20 +10679,64 @@ function pageBack(k, h) {
   back.appendChild(backShade);
   return { back, backShade };
 }
+/* ---------- phones: which page of the spread is open, and the turn of one page over the spine ---------- */
+var phSide = "L";   /* var/function: used by updateNav, which may run before this line */
+function isPhone() { return !!(window.matchMedia && !matchMedia("(min-width: 1024px) and (min-height: 600px)").matches); }
+function phSet(side) { phSide = side; if (flipEl) { flipEl.classList.toggle("ph-l", side === "L"); flipEl.classList.toggle("ph-r", side === "R"); } }
+function phTurn(mover, under, away, done) {
+  /* away: the page lifts off and turns to the left, showing the one under it; otherwise it comes back from the left */
+  turning = true;
+  mover.classList.add("ph-turning"); under.classList.add("ph-turning");
+  const h = mover.offsetHeight;
+  Object.assign(mover.style, { position: "absolute", top: "0", left: "0", right: "0", width: "100%", zIndex: "30", height: h + "px", transformOrigin: "0 50%", backfaceVisibility: "hidden" });
+  const D = 720, E = "cubic-bezier(.42,.02,.28,1)";
+  const fr = [{ transform: "rotateY(0deg)" }, { transform: "rotateY(-60deg) translateZ(18px)" }, { transform: "rotateY(-120deg) translateZ(18px)" }, { transform: "rotateY(-180deg)" }];
+  const shade = document.createElement("div"); shade.className = "leaf-shade"; mover.appendChild(shade);
+  const anims = [
+    mover.animate(away ? fr : [...fr].reverse(), { duration: D, easing: E }),
+    shade.animate(away ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }], { duration: D, easing: E }),
+    under.animate(away ? [{ filter: "brightness(.45)" }, { filter: "none" }] : [{ filter: "none" }, { filter: "brightness(.45)" }], { duration: D, easing: E })
+  ];
+  let fin = false;
+  const finish = () => {
+    if (fin) return; fin = true;
+    anims.forEach(a => a.cancel()); shade.remove();
+    ["position", "top", "left", "right", "width", "zIndex", "height", "transformOrigin", "backfaceVisibility"].forEach(k => { mover.style[k] = ""; });
+    mover.classList.remove("ph-turning"); under.classList.remove("ph-turning");
+    turning = false; done && done();
+  };
+  anims[0].onfinish = finish;
+  setTimeout(finish, D + 500);   /* the app was put away mid-turn and the animation never ended: finish anyway */
+}
 function showPage(i, instant) {
+  if (isPhone() && !instant && !turning) {
+    /* within one spread: turn from the left page to the right one and back */
+    if (i === curP + 1 && phSide === "L") { window.dispatchEvent(new CustomEvent("pageturn", { detail: 1 }));
+      if (reduceMotion || !tmLeft.animate) { phSet("R"); afterShow(); } else { phSet("R"); phTurn(tmLeft, leaves[curP], true, afterShow); } return; }
+    if (i === curP - 1 && phSide === "R") { window.dispatchEvent(new CustomEvent("pageturn", { detail: -1 }));
+      if (reduceMotion || !tmLeft.animate) { phSet("L"); afterShow(); } else { phSet("L"); phTurn(tmLeft, leaves[curP], false, afterShow); } return; }
+  }
   if (i < 0 || i >= leaves.length || i === curP || turning) return;
   const out = leaves[curP], inn = leaves[i], fwd = i > curP;
   const innIn = inn.querySelector(":scope > .leaf-in"); if (innIn) innIn.scrollTop = 0;   /* a page opens at its top */
-  const phone = window.matchMedia && !matchMedia("(min-width: 1024px) and (min-height: 600px)").matches;
-  if (instant || reduceMotion || !out.animate || phone) {
-    out.hidden = true; inn.hidden = false; curP = i; setLeft(i - 1); afterShow();
-    if (phone && !instant) {
-      /* on a phone the pages lie one above the other: no 3D turn, the new spread slides in and opens at its top */
-      window.dispatchEvent(new CustomEvent("pageturn", { detail: fwd ? 1 : -1 }));
-      const dx = fwd ? 36 : -36;
-      if (!reduceMotion && inn.animate) [tmLeft, inn].forEach((el, k) => el && el.animate([{ opacity: 0, transform: `translateX(${dx}px)` }, { opacity: 1, transform: "none" }], { duration: 320, delay: k * 60, easing: "ease-out", fill: "backwards" }));
+  if (isPhone()) {
+    /* a phone: one page at a time. Next/previous between neighbouring spreads turns a single page */
+    const adj = Math.abs(i - curP) === 1, side = instant ? "R" : adj ? (fwd ? "L" : "R") : "L";
+    if (instant || reduceMotion || !out.animate || !adj) {
+      out.hidden = true; inn.hidden = false; curP = i; setLeft(i - 1); phSet(side); afterShow(); return;
+    }
+    window.dispatchEvent(new CustomEvent("pageturn", { detail: fwd ? 1 : -1 }));
+    if (fwd) {   /* the right page of this spread turns over and uncovers the next left page */
+      setLeft(i - 1); inn.hidden = false; curP = i; phSet("L");
+      phTurn(out, tmLeft, true, () => { out.hidden = true; afterShow(); });
+    } else {     /* the right page of the previous spread comes back over this left page */
+      inn.hidden = false; phSet("R");
+      phTurn(inn, tmLeft, false, () => { out.hidden = true; curP = i; setLeft(i - 1); afterShow(); });
     }
     return;
+  }
+  if (instant || reduceMotion || !out.animate) {
+    out.hidden = true; inn.hidden = false; curP = i; setLeft(i - 1); afterShow(); return;
   }
   turning = true;
   window.dispatchEvent(new CustomEvent("pageturn", { detail: fwd ? 1 : -1 }));
@@ -10800,6 +10854,8 @@ function revealLeaf(el) {
   if (i >= 0 && i !== curP) showPage(i, true);
 }
 if (leaves.length) {
+  phSet("L");
+  if (window.matchMedia) matchMedia("(min-width: 1024px) and (min-height: 600px)").addEventListener("change", () => updateNav());
   const toc = document.getElementById("toc");
   toc.innerHTML = leaves.map((l, i) => `<option value="${i}">${i + 1}. ${l.dataset.title}</option>`).join("");
   toc.addEventListener("change", () => showPage(+toc.value));
@@ -11092,6 +11148,7 @@ if (leaves.length) {
     root.classList.remove("closed");
     stage.classList.add("fade");
     if (curP !== 0) showPage(0, true);
+    if (isPhone()) { phSet("L"); updateNav(); }   /* a phone opens the book at its very first page: the ex libris */
     if (typeof drawAll === "function") drawAll();
     if (typeof drawEyes === "function") drawEyes();
     window.scrollTo(0, 0);
