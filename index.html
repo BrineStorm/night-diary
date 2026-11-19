@@ -3747,6 +3747,72 @@ html.closed, html.closed body { overflow: hidden; }
 @keyframes clFlinchR { 0% { transform: none; } 12% { transform: translate(24%, -26%) rotate(14deg); } 100% { transform: translate(6%, -7%) rotate(5deg); } }
 @media (prefers-reduced-motion: reduce) { .jj-claws img { animation: none !important; } }
 @media print { .jj-claws { display: none; } }
+/* ---------- «Полуденный ужас» in the pocket of «Лестница»: the photo burnt white by noon ---------- */
+.jj-nn { width: 30%; max-width: 180px; aspect-ratio: 735 / 973; bottom: calc(24px + 24% - 60px); --er: -6deg; }
+.jj-nn img { filter: brightness(1.5) contrast(.8) saturate(.55) sepia(.4) hue-rotate(-12deg); border-radius: 3px; }
+.jj-nn::after { content: "12:00"; position: absolute; right: 7%; top: 5%; font: 700 clamp(11px, 2.4vw, 17px)/1 ui-monospace, Consolas, monospace; letter-spacing: .08em;
+  color: #ff3a26; text-shadow: 0 0 4px rgba(255,60,30,.9); animation: nnLed 2.6s steps(1) infinite; }
+.nnv { cursor: default; gap: 10px; overflow-y: auto; align-content: start; padding-top: max(14px, env(safe-area-inset-top, 0px));
+  background: radial-gradient(ellipse at 50% 30%, rgba(80,70,40,.55), rgba(6,5,4,.95) 72%); }
+.nn-stage { position: relative; height: min(64vh, 700px, calc(94vw * 973 / 735)); aspect-ratio: 735 / 973; overflow: hidden; border-radius: 6px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.85); user-select: none; -webkit-user-select: none; touch-action: manipulation; container-type: inline-size; background: #000; }
+.nn-stage > * { position: absolute; pointer-events: none; }
+.nn-scene { inset: 0; transform-origin: 67% 50%; transform: scale(calc(1 + .4 * var(--creep))); will-change: transform;
+  filter: url(#nnHeat) brightness(calc(1 + .4 * var(--noon))) contrast(calc(1 + .08 * var(--noon))) saturate(calc(1 - .38 * var(--noon))) sepia(calc(.38 * var(--noon))) hue-rotate(calc(-12deg * var(--noon)));
+  transition: filter 1.6s; }
+.nn-scene > * { position: absolute; }
+.nn-base { inset: 0; width: 100%; height: 100%; display: block; }
+/* each eye is a piece of the original photo; it looks at you and blinks */
+.nn-eye { transform: translate(calc(var(--lx) * -2.4%), calc(var(--ly) * -1.6%)); transition: transform .5s ease-out; }
+.nn-eye-in { position: absolute; inset: 0; background-image: url("assets/extras/noon.jpg"); background-repeat: no-repeat; filter: contrast(1.25) brightness(.92);
+  -webkit-mask: radial-gradient(closest-side, #000 72%, transparent 100%); mask: radial-gradient(closest-side, #000 72%, transparent 100%);
+  transform-origin: 50% 55%; transition: transform .9s cubic-bezier(.5,0,.3,1), opacity 1.4s .5s; animation: nnEyeDrift 5.5s ease-in-out var(--d) infinite alternate; }
+@keyframes nnEyeDrift { to { translate: 0 -3%; } }
+.nn-eye.blink .nn-eye-in { animation: nnBlink .32s ease-in-out, nnEyeDrift 5.5s ease-in-out var(--d) infinite alternate; }
+@keyframes nnBlink { 50% { transform: scaleY(.06); } }
+.nn-eye.shut .nn-eye-in { transform: scaleY(.04); opacity: 0; }
+/* the flower head sways and turns toward you */
+.nn-flower { background-image: url("assets/extras/noon.jpg"); background-repeat: no-repeat; border-radius: 50%;
+  -webkit-mask: radial-gradient(closest-side, #000 80%, transparent 100%); mask: radial-gradient(closest-side, #000 80%, transparent 100%);
+  transform: translate(calc(var(--lx) * 1.8%), calc(var(--ly) * 1%)) rotate(calc(var(--lx) * 4deg)); animation: nnSway 6.5s ease-in-out infinite alternate; }
+@keyframes nnSway { from { rotate: -5deg; } to { rotate: 6deg; } }
+.nn-stage.free .nn-flower { animation-play-state: paused; }
+/* the LED words flicker */
+/* only the red letters glow: everything darker than them is pushed to black, and black adds nothing on «screen» */
+.nn-led { background-image: url("assets/extras/noon.jpg"); background-repeat: no-repeat; mix-blend-mode: screen;
+  filter: brightness(.5) contrast(5) saturate(2.2) blur(.4px);
+  animation: nnLedGlow 2.6s steps(1) var(--d) infinite, nnGlitch 5s steps(1) var(--d) infinite; transition: opacity 1.4s; }
+@keyframes nnLedGlow { 0%, 100% { opacity: 1; } 12% { opacity: 0; } 16% { opacity: 1; } 55% { opacity: .7; } 58% { opacity: .1; } 62% { opacity: 1; } }
+@keyframes nnLed { 0%, 100% { opacity: 1; } 12% { opacity: .25; } 16% { opacity: 1; } 55% { opacity: .85; } 58% { opacity: .35; } 62% { opacity: 1; } }
+@keyframes nnGlitch { 0%, 100% { translate: 0 0; } 41% { translate: 3% 0; } 43% { translate: -2% 0; } 45% { translate: 0 0; } }
+.nn-stage.free .nn-led { opacity: 0; }
+/* noon: white sky, a sun you cannot look at, dust in the air, the heat */
+.nn-bleach { inset: 0; mix-blend-mode: screen; opacity: var(--noon); transition: opacity 1.6s;
+  background: linear-gradient(180deg, rgba(255,250,228,.5), rgba(255,244,205,.24) 34%, rgba(255,236,180,.06) 58%, rgba(255,240,200,.12)); }
+.nn-sun { right: -22%; top: -20%; width: 62%; aspect-ratio: 1; border-radius: 50%; mix-blend-mode: screen; opacity: var(--noon); transition: opacity 1.6s;
+  background: radial-gradient(circle, #fff 0 9%, rgba(255,252,236,.95) 13%, rgba(255,246,210,.5) 26%, rgba(255,240,200,.15) 45%, transparent 66%);
+  animation: nnSun 4s ease-in-out infinite alternate; }
+.nn-sun::after { content: ""; position: absolute; inset: 8%; border-radius: 50%; opacity: .45;
+  background: repeating-conic-gradient(from 0deg, rgba(255,255,240,.55) 0 2deg, transparent 2deg 11deg);
+  -webkit-mask: radial-gradient(circle, transparent 12%, #000 18%, transparent 70%); mask: radial-gradient(circle, transparent 12%, #000 18%, transparent 70%);
+  animation: snSpin 60s linear infinite; }
+@keyframes nnSun { to { transform: scale(1.06); } }
+.nn-motes { inset: 0; opacity: calc(.75 * var(--noon)); mix-blend-mode: screen;
+  background: radial-gradient(circle, rgba(255,250,225,.9) 0 1px, transparent 1.6px) 0 0 / 53px 61px, radial-gradient(circle, rgba(255,245,210,.7) 0 .8px, transparent 1.3px) 21px 17px / 37px 43px;
+  animation: nnMotes 14s linear infinite; }
+@keyframes nnMotes { to { background-position: 30px -120px, 0 -90px; } }
+.nn-vig { inset: 0; background: radial-gradient(ellipse at 60% 45%, transparent 45%, rgba(60,40,10,calc(.15 + .35 * var(--creep))) 100%); }
+.nn-clock { left: 5%; bottom: 3.5%; font: 700 7.5cqw/1 ui-monospace, Consolas, monospace; letter-spacing: .1em; color: #ff3a26;
+  text-shadow: 0 0 6px rgba(255,60,30,.95), 0 0 18px rgba(255,40,20,.55); animation: nnLed 2.6s steps(1) infinite;
+  -webkit-mask: radial-gradient(circle, #000 58%, transparent 64%) 0 0 / 3px 3px; mask: radial-gradient(circle, #000 58%, transparent 64%) 0 0 / 3px 3px; }
+.nn-stage.free .nn-clock { animation: none; color: #e9dfc8; text-shadow: 0 0 6px rgba(233,223,200,.6); }
+.nn-cap { min-height: 3em; max-width: min(94vw, 640px); margin: 0; }
+.nn-step { max-width: min(94vw, 620px); text-align: center; color: var(--chalk); margin: 0; }
+.nn-chips { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; max-width: min(94vw, 640px); }
+.nn-said { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; max-width: min(94vw, 640px); }
+.nn-said span { font-family: var(--f-hand); font-size: 17px; color: var(--ash); padding: 0 6px; border-bottom: 1px dashed rgba(233,215,170,.3); }
+.nnv .oj-why { max-width: min(94vw, 640px); }
+@media (prefers-reduced-motion: reduce) { .nn-eye-in, .nn-flower, .nn-led, .nn-sun, .nn-sun::after, .nn-motes, .nn-clock { animation: none !important; } .nn-scene { filter: brightness(calc(1 + .62 * var(--noon))) contrast(calc(1 - .26 * var(--noon))) saturate(calc(1 - .45 * var(--noon))) sepia(calc(.45 * var(--noon))); } }
 </style>
 </head>
 <body>
@@ -9174,6 +9240,7 @@ const LEFT_EXTRA = {
   guide: { kind: "ouija", alt: "Говорящая доска: нажми, если не страшно" },
   talk: { kind: "seance", alt: "Жестяная шкатулка для спиритического сеанса: открой" },
   hand: { kind: "claws" },
+  stairs: { kind: "noon", alt: "Карточка «Полуденный ужас»: нажми, если не страшно" },
   trauma: { kind: "curio", alt: "Пустой домик-полка: наполни его" },
   maze: { kind: "hang", src: "assets/extras/wreath.png", alt: "Круг из костей на нитках: нажми, чтобы раскрутить" },
   potions: { kind: "smoke", alt: "Серебряный портсигар: открой" },
@@ -10276,7 +10343,139 @@ function openSeance(setBox) {
   btn("open").focus({ preventScroll: true });
   return box;
 }
+/* «Полуденный ужас» (pocket of «Лестница»): the photo burnt white by the noon sun; the eyes in the sky blink and watch,
+   the flower head sways, «WE ARE NEAR» flickers, the clock is stuck at 12:00, and while you sit still the world creeps
+   toward the figure. Naming 5 things you see, 4 you hear and 3 you feel closes the eyes one by one and lets noon go.
+   Photo 735 x 973: noon-base.jpg has the eyes painted out, noon.jpg is the original the eyes and the flower are cut from. */
+const NN_W = 735, NN_H = 973;
+const NN_EYES = [[110, 32, 28, 20], [60, 82, 40, 27], [145, 72, 24, 17], [175, 130, 43, 28], [250, 122, 22, 17], [270, 163, 27, 20], [118, 175, 23, 18],
+  [205, 213, 52, 36], [110, 215, 21, 17], [128, 252, 18, 13], [215, 270, 18, 13], [265, 272, 25, 18], [55, 288, 55, 37], [140, 10, 13, 9]];
+const NN_FLOWER = [495, 300, 118];
+const NN_LED = [[352, 32, 708, 128], [26, 498, 384, 594], [336, 832, 694, 928]];
+const NN_STEPS = [
+  { n: 5, verb: "вижу", ask: "Назови то, что ты ВИДИШЬ вокруг себя прямо сейчас — не на экране. Пять вещей.",
+    sugg: ["стена", "лампа", "мои руки", "окно", "потолок", "одеяло", "чашка", "дверь"] },
+  { n: 4, verb: "слышу", ask: "Теперь то, что ты СЛЫШИШЬ. Четыре звука, даже самые тихие.",
+    sugg: ["своё дыхание", "холодильник", "машины за окном", "тиканье часов", "шорох одежды", "тишину"] },
+  { n: 3, verb: "чувствую", ask: "И три вещи, которые ЧУВСТВУЕТ тело: опору, ткань, тепло или холод.",
+    sugg: ["пол под ногами", "ткань одежды", "прохладный воздух", "тёплую чашку", "спинку стула", "свои ладони"] }
+];
+const nnCrop = (x0, y0, w, h) => `left:${(x0 / NN_W * 100).toFixed(2)}%;top:${(y0 / NN_H * 100).toFixed(2)}%;width:${(w / NN_W * 100).toFixed(2)}%;height:${(h / NN_H * 100).toFixed(2)}%;` +
+  `background-size:${(NN_W / w * 100).toFixed(2)}% ${(NN_H / h * 100).toFixed(2)}%;background-position:${(x0 / (NN_W - w) * 100).toFixed(2)}% ${(y0 / (NN_H - h) * 100).toFixed(2)}%`;
+function openNoon(setBox) {
+  const box = document.createElement("div");
+  box.className = "jj-view nnv no-print"; box.setAttribute("role", "dialog"); box.setAttribute("aria-label", "Полуденный ужас");
+  const eyes = NN_EYES.map(([cx, cy, rx, ry], j) => {
+    const w = rx * 2.3, h = ry * 2.5;
+    return `<i class="nn-eye" style="${nnCrop(cx - w / 2, cy - h / 2, w, h).replace(/background-[^;]+;?/g, "")};--d:${(-j * .9).toFixed(1)}s"><i class="nn-eye-in" style="${nnCrop(cx - w / 2, cy - h / 2, w, h).replace(/(left|top|width|height):[^;]+;/g, "")}"></i></i>`;
+  }).join("");
+  const [fx, fy, fr] = NN_FLOWER;
+  box.innerHTML = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="nnHeat" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency=".008 .05" numOctaves="2" seed="4"><animate attributeName="baseFrequency" dur="7s" values=".008 .05;.009 .068;.008 .05" repeatCount="indefinite"/></feTurbulence>
+      <feDisplacementMap id="nnHeatMap" in="SourceGraphic" scale="9" xChannelSelector="R" yChannelSelector="G"/></filter></svg>
+    <div class="nn-stage" id="nnStage" style="--noon:1;--creep:0;--lx:0;--ly:0">
+      <div class="nn-scene" id="nnScene">
+        <img class="nn-base" src="assets/extras/noon-base.jpg" alt="Поле, дорожные знаки, в небе глаза, человек в костюме с головой-ромашкой" draggable="false">
+        ${eyes}
+        <i class="nn-flower" style="${nnCrop(fx - fr, fy - fr, fr * 2, fr * 2)}"></i>
+        ${NN_LED.map(([x0, y0, x1, y1], j) => `<i class="nn-led" style="${nnCrop(x0, y0, x1 - x0, y1 - y0)};--d:${(-j * 1.3).toFixed(1)}s"></i>`).join("")}
+      </div>
+      <i class="nn-bleach"></i><i class="nn-sun"></i><i class="nn-motes"></i><i class="nn-vig"></i>
+      <b class="nn-clock" id="nnClock">12:00</b>
+    </div>
+    <p class="pc-cap nn-cap" id="nnCap" aria-live="polite">Полдень. Солнце в зените, теней почти нет. Всё слишком яркое — и будто ненастоящее. Они рядом.</p>
+    <p class="hint nn-step" id="nnStep"></p>
+    <form class="sn-ask" id="nnAsk"><input id="nnIn" maxlength="40" autocomplete="off" placeholder="впиши, что вокруг тебя"><button class="btn primary" type="submit">Назвать</button></form>
+    <div class="nn-chips" id="nnChips"></div>
+    <div class="nn-said" id="nnSaid"></div>
+    <details class="oj-why"><summary>Что такое полуденный ужас?</summary><p>Старое имя чувства, которое приходит не ночью, а средь бела дня: мир вдруг кажется плоским и чужим, как декорация или сон, и кажется, что за тобой наблюдают. У славян это Полудница, что бродит по полю в самый зной; у греков — час Пана. Сейчас это называют дереализацией. Она пугает, но не опасна: так мозг приглушает перегрузку от стресса, тревоги или недосыпа. Возвращает простое: назвать то, что видишь, слышишь и чувствуешь телом. Если такое бывает часто и подолгу — стоит рассказать врачу.</p></details>
+    <div class="row"><button class="btn" type="button" data-nn="again" hidden>Ещё раз в полдень</button><button class="btn" type="button" data-nn="close">Убрать в кармашек</button></div>`;
+  document.body.appendChild(box);
+  const $n = id => box.querySelector("#" + id), stage = $n("nnStage"), cap = $n("nnCap"), heatMap = $n("nnHeatMap");
+  const eyeEls = [...box.querySelectorAll(".nn-eye")];
+  const order = eyeEls.map((_, j) => j).sort(() => Math.random() - .5);
+  const TOTAL = NN_STEPS.reduce((a, s) => a + s.n, 0);
+  let alive = true, done = 0, step = 0, inStep = 0, creep = 0, idleT = performance.now(), last = performance.now(), saidCreep = 0, free = false;
+  const say = t => { cap.textContent = t; };
+  function stepUI() {
+    if (free) { $n("nnStep").textContent = ""; $n("nnChips").innerHTML = ""; $n("nnAsk").hidden = true; return; }
+    const s = NN_STEPS[step];
+    $n("nnStep").textContent = `${s.ask} (${inStep} из ${s.n})`;
+    $n("nnChips").innerHTML = s.sugg.map(w => `<button class="chip" type="button" data-w="${w}">${w}</button>`).join("");
+  }
+  function setNoon() {
+    const k = free ? 0 : 1 - done / TOTAL;
+    stage.style.setProperty("--noon", k.toFixed(3));
+    if (heatMap) heatMap.setAttribute("scale", (reduceMotion ? 0 : 9 * k).toFixed(1));
+  }
+  function name(word) {
+    if (free) return;
+    word = word.trim(); if (!word) { say("Впиши что-нибудь настоящее, что есть рядом с тобой."); $n("nnIn").focus(); return; }
+    idleT = performance.now(); creep = Math.max(0, creep - .35);
+    const s = NN_STEPS[step];
+    $n("nnSaid").insertAdjacentHTML("beforeend", `<span>${s.verb}: ${esc(word)}</span>`);
+    done++; inStep++;
+    const shut = Math.round(eyeEls.length * done / TOTAL);
+    order.slice(0, shut).forEach(j => eyeEls[j].classList.add("shut"));
+    setNoon();
+    if (inStep >= s.n) { step++; inStep = 0; }
+    if (step >= NN_STEPS.length) { release(); return; }
+    say(["Один глаз закрылся.", "Ещё один. Солнце чуть ниже.", "Ты называешь — и оно становится настоящим.", "Свет уже не такой белый."][done % 4]);
+    $n("nnIn").value = ""; stepUI();
+  }
+  function release() {
+    free = true; setNoon(); stepUI(); stage.classList.add("free");
+    const t = new Date(); $n("nnClock").textContent = `${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")}`;
+    say("Полдень отпустил. Глаза закрылись, часы снова идут, и это опять твоё время. Мир настоящий — ты только что проверила это сама.");
+    box.querySelector("[data-nn=again]").hidden = false;
+  }
+  function again() {
+    free = false; done = 0; step = 0; inStep = 0; creep = 0; stage.classList.remove("free");
+    eyeEls.forEach(e => e.classList.remove("shut")); $n("nnSaid").innerHTML = ""; $n("nnAsk").hidden = false;
+    $n("nnClock").textContent = "12:00"; box.querySelector("[data-nn=again]").hidden = true; setNoon(); stepUI();
+    say("Снова полдень. Они рядом.");
+  }
+  /* the eyes and the flower follow the pointer; sitting still lets the world creep toward him */
+  stage.addEventListener("pointermove", e => {
+    const r = stage.getBoundingClientRect();
+    stage.style.setProperty("--lx", (((e.clientX - r.left) / r.width - .3) * 2).toFixed(2));
+    stage.style.setProperty("--ly", (((e.clientY - r.top) / r.height - .25) * 2).toFixed(2));
+  });
+  ["pointerdown", "keydown"].forEach(ev => box.addEventListener(ev, () => { idleT = performance.now(); }));
+  function tick(now) {
+    if (!alive) return;
+    const dt = Math.min(.1, (now - last) / 1000); last = now;
+    if (!free && now - idleT > 2500) creep = Math.min(1, creep + dt * .03); else creep = Math.max(0, creep - dt * (free ? .25 : .08));
+    stage.style.setProperty("--creep", creep.toFixed(3));
+    if (!free) {
+      if (creep > .3 && saidCreep < 1) { saidCreep = 1; say("Ты замерла — и он ближе."); }
+      if (creep > .65 && saidCreep < 2) { saidCreep = 2; say("WE ARE NEAR. Не смотри на него — посмотри вокруг себя и назови, что видишь."); }
+      if (creep < .1) saidCreep = 0;
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+  /* the eyes blink on their own */
+  const blink = () => {
+    if (!alive) return;
+    const open = eyeEls.filter(e => !e.classList.contains("shut"));
+    if (open.length) { const e = open[Math.floor(Math.random() * open.length)]; e.classList.remove("blink"); void e.offsetWidth; e.classList.add("blink"); }
+    setTimeout(blink, 500 + Math.random() * 1600);
+  };
+  setTimeout(blink, 800);
+  $n("nnAsk").addEventListener("submit", e => { e.preventDefault(); name($n("nnIn").value); });
+  box.addEventListener("click", e => {
+    const c = e.target.closest("[data-w]"); if (c) { name(c.dataset.w); return; }
+    const b = e.target.closest("[data-nn]");
+    if (b && b.dataset.nn === "again") { again(); return; }
+    if ((b && b.dataset.nn === "close") || (!b && !e.target.closest(".nn-stage, .sn-ask, .nn-chips, .nn-said, .oj-why, .pc-cap, .hint"))) { alive = false; box.remove(); setBox(null); }
+  });
+  stepUI(); setNoon();
+  return box;
+}
 function extraHTML(id, ex) {
+  if (ex.kind === "noon")
+    return `<button class="jj-extra jj-nn" type="button" data-extra="${id}" aria-label="${ex.alt}"><img src="assets/extras/noon.jpg" alt="" loading="lazy" decoding="async" draggable="false"></button>`;
   if (ex.kind === "claws")   /* two clawed hands with rosaries reach over the engraving, creep closer and back; a touch makes them flinch */
     return `<div class="jj-lantern">${JJ_LANTERN}</div><div class="jj-claws" aria-hidden="true">
       <img class="cl-l" src="assets/extras/claw-left.png" alt="" draggable="false"><img class="cl-r" src="assets/extras/claw-right.png" alt="" draggable="false"></div>`;
@@ -10366,6 +10565,7 @@ function extraHTML(id, ex) {
     if (ex.kind === "smoke") { box = openSmoke(v => { box = v; }); return; }
     if (ex.kind === "curio") { box = openCurio(v => { box = v; }); return; }
     if (ex.kind === "seance") { box = openSeance(v => { box = v; }); return; }
+    if (ex.kind === "noon") { box = openNoon(v => { box = v; }); return; }
     if (ex.kind === "hang") { const h = b.querySelector(".jj-hang-in"); h.classList.remove("spin"); void h.offsetWidth; h.classList.add("spin"); return; }
     if (ex.kind === "haunt") {
       /* he stands still only while you look at him; look away and he comes closer. The light shows what he is. */
