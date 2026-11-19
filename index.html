@@ -3723,6 +3723,30 @@ html.closed, html.closed body { overflow: hidden; }
 .pages .hrs { color: #6a3a22; }
 .pages .tag { border-color: rgba(90,34,16,.55); color: #5a1e12; }
 .pages .tag.ev { background: #4e140e; border-color: #4e140e; color: #e2cfa4; }
+/* ---------- clawed hands with rosaries over the left page of «Рука тревоги»: always creeping, flinch when touched ---------- */
+.jj-claws { position: absolute; z-index: 4; left: -2%; top: -1%; width: 104%; aspect-ratio: 736 / 748; pointer-events: none; }
+.jj-claws img { position: absolute; top: 0; height: auto; max-width: none; pointer-events: auto; cursor: pointer;
+  filter: drop-shadow(0 0 1px rgba(235,215,225,.55)) drop-shadow(0 0 10px rgba(200,170,190,.18)) drop-shadow(6px 14px 10px rgba(0,0,0,.7)); }
+.jj-claws .cl-l { left: -9%; top: 3%; width: 37%; transform-origin: 14% 4%; animation: clCreepL 7.5s ease-in-out infinite; }
+.jj-claws .cl-r { left: auto; right: -10%; top: 9%; width: 44%; transform-origin: 86% 3%; animation: clCreepR 9s ease-in-out -3.4s infinite; }
+@keyframes clCreepL {
+  0%, 100% { transform: translate(-7%, -6%) rotate(-5deg); }
+  30% { transform: translate(-1%, -1%) rotate(1deg) skewX(-1deg); }
+  47% { transform: translate(1.5%, 1%) rotate(3deg) skewX(1.5deg); }
+  55% { transform: translate(.5%, 0) rotate(2deg); }
+  72% { transform: translate(2.5%, 2%) rotate(4deg) skewX(-1deg); } }
+@keyframes clCreepR {
+  0%, 100% { transform: translate(6%, -7%) rotate(5deg); }
+  28% { transform: translate(1%, -2%) rotate(0deg) skewX(1deg); }
+  50% { transform: translate(-1.5%, 1%) rotate(-3deg) skewX(-1.5deg); }
+  60% { transform: translate(-.5%, 0) rotate(-2deg); }
+  78% { transform: translate(-2.5%, 2.5%) rotate(-4deg) skewX(1deg); } }
+.jj-claws.flinch .cl-l { animation: clFlinchL 1.8s cubic-bezier(.2,.8,.3,1); }
+.jj-claws.flinch .cl-r { animation: clFlinchR 1.8s cubic-bezier(.2,.8,.3,1); }
+@keyframes clFlinchL { 0% { transform: none; } 12% { transform: translate(-24%, -26%) rotate(-14deg); } 100% { transform: translate(-7%, -6%) rotate(-5deg); } }
+@keyframes clFlinchR { 0% { transform: none; } 12% { transform: translate(24%, -26%) rotate(14deg); } 100% { transform: translate(6%, -7%) rotate(5deg); } }
+@media (prefers-reduced-motion: reduce) { .jj-claws img { animation: none !important; } }
+@media print { .jj-claws { display: none; } }
 </style>
 </head>
 <body>
@@ -9149,6 +9173,7 @@ const LEFT_EXTRA = {
     torn: "Билет недействителен. Пугало осталось в поле, а ты — дома." },
   guide: { kind: "ouija", alt: "Говорящая доска: нажми, если не страшно" },
   talk: { kind: "seance", alt: "Жестяная шкатулка для спиритического сеанса: открой" },
+  hand: { kind: "claws" },
   trauma: { kind: "curio", alt: "Пустой домик-полка: наполни его" },
   maze: { kind: "hang", src: "assets/extras/wreath.png", alt: "Круг из костей на нитках: нажми, чтобы раскрутить" },
   potions: { kind: "smoke", alt: "Серебряный портсигар: открой" },
@@ -10252,6 +10277,9 @@ function openSeance(setBox) {
   return box;
 }
 function extraHTML(id, ex) {
+  if (ex.kind === "claws")   /* two clawed hands with rosaries reach over the engraving, creep closer and back; a touch makes them flinch */
+    return `<div class="jj-lantern">${JJ_LANTERN}</div><div class="jj-claws" aria-hidden="true">
+      <img class="cl-l" src="assets/extras/claw-left.png" alt="" draggable="false"><img class="cl-r" src="assets/extras/claw-right.png" alt="" draggable="false"></div>`;
   if (ex.kind === "seance")
     return `<button class="jj-extra jj-sn" type="button" data-extra="${id}" aria-label="${ex.alt}">${snMiniHTML()}</button>`;
   if (ex.kind === "curio")
@@ -10722,6 +10750,11 @@ const JJ_NOTES = [
 const JJ_Q = ["тише. это всего лишь ночь", "утро всегда приходит", "ты дожила до этой страницы", "дыши. медленно", "страх — не факт", "сегодня можно просто быть", "темнота — не враг", "ты не одна в этой комнате", "нужно дотянуть только до утра", "свеча горит, пока ты дышишь", "тень от куртки — это тень от куртки", "завтра будет новая страница"];
 document.addEventListener("click", e => { const t = e.target.closest && e.target.closest(".jj-tag"); if (t) t.classList.toggle("out"); });
 document.addEventListener("click", e => { if (e.target.closest && e.target.closest(".ph-corner")) showPage(curP + 1); });
+document.addEventListener("click", e => {
+  const h = e.target.closest && e.target.closest(".jj-claws img"); if (!h) return;
+  const c = h.parentNode; c.classList.remove("flinch"); void c.offsetWidth; c.classList.add("flinch");
+  clearTimeout(c._t); c._t = setTimeout(() => c.classList.remove("flinch"), 1900);
+});
 let tmLeft = null, tmLeftShade = null, tmLeftK = null;
 function setLeft(k) {
   if (!tmLeft || k === tmLeftK) return;
